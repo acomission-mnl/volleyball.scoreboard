@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volleyball Scoreboard</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{
+    background:#050606;
+    color:#f5f5f5;
+    font-family:Arial,Helvetica,sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.board{
+    width:98vw;
+    height:94vh;
+    background:#0c0e0e;
+    border:4px solid #d7d7d7;
+    box-shadow:inset 0 0 0 5px #181a1a,0 0 30px #000;
+    position:relative;
+    display:grid;
+    grid-template-columns:1fr 1.18fr 1fr;
+    grid-template-rows:1fr .72fr;
+    padding:26px 42px 24px;
+}
+
+/* TOP MATCH CLOCK */
+.clock-box{
+    position:absolute;
+    top:28px;
+    left:50%;
+    transform:translateX(-50%);
+    width:390px;
+    height:150px;
+    border:2px solid #8a8a8a;
+    background:#121515;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.dotclock{
+    color:#ff2929;
+    font-family:"Courier New",monospace;
+    font-size:76px;
+    line-height:1;
+    font-weight:900;
+    letter-spacing:2px;
+    text-shadow:0 0 7px rgba(255,40,40,.2);
+}
+
+/* TEAMS */
+.team{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding-top:105px;
+    position:relative;
+}
+.team-name{
+    font-size:clamp(40px,5vw,82px);
+    font-weight:800;
+    letter-spacing:1px;
+    line-height:1;
+    outline:none;
+    user-select:text;
+}
+.team-name:focus{
+    border-bottom:2px solid #777;
+}
+.team-score{
+    margin-top:12px;
+    font-family:"Courier New",monospace;
+    font-size:clamp(90px,11vw,175px);
+    line-height:.85;
+    font-weight:900;
+    letter-spacing:-7px;
+    color:#ff2929;
+    min-width:3ch;
+    text-align:center;
+}
+.sets-won{
+    position:absolute;
+    top:112px;
+    color:#ff2929;
+    background:#171a1a;
+    border:1px solid #2d3030;
+    font:900 26px "Courier New",monospace;
+    padding:3px 10px;
+}
+.home .sets-won{right:12%}
+.away .sets-won{left:12%}
+
+/* CENTER */
+.center{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding-top:188px;
+}
+.set-title{
+    font-size:clamp(38px,4.2vw,63px);
+    font-weight:700;
+    line-height:1;
+    margin-top:7px;
+}
+.set-number{
+    color:#ff2929;
+    font:900 clamp(40px,4.5vw,66px) "Courier New",monospace;
+}
+.serving{
+    margin-top:13px;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    font-size:clamp(25px,2.7vw,39px);
+    font-weight:700;
+}
+.serve-dot{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:#222727;
+    border:5px dotted #4d5252;
+}
+.serve-dot.active{
+    background:#ff2929;
+    border-color:#ff5555;
+    box-shadow:0 0 14px rgba(255,40,40,.4);
+}
+
+/* SET HISTORY */
+.history{
+    grid-column:1/-1;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    align-items:end;
+    gap:24px;
+    padding:0 0 4px;
+}
+.set-card{text-align:center}
+.set-card h2{
+    margin:0 0 5px;
+    font-size:clamp(28px,3.2vw,48px);
+    line-height:1;
+}
+.set-score{
+    color:#ff2929;
+    font:900 clamp(29px,3.7vw,56px) "Courier New",monospace;
+    letter-spacing:-3px;
+    white-space:nowrap;
+}
+.set-card.active h2{
+    text-decoration:underline;
+    text-decoration-thickness:3px;
+    text-underline-offset:6px;
+}
+.set-card.finished h2{color:#aaa}
+
+/* KEY STATUS BAR */
+.keybar{
+    position:absolute;
+    left:50%;
+    bottom:7px;
+    transform:translateX(-50%);
+    color:#6d7272;
+    font:13px "Courier New",monospace;
+    white-space:nowrap;
+}
+.keybar b{color:#aaa}
+
+/* flash when key is used */
+.flash{
+    animation:flash .18s linear;
+}
+@keyframes flash{
+    50%{opacity:.35}
+}
+
+/* Mobile */
+@media(max-width:850px){
+    body{overflow:auto;padding:8px}
+    .board{
+        width:100%;
+        height:auto;
+        min-height:96vh;
+        grid-template-columns:1fr 1fr;
+        grid-template-rows:auto auto auto;
+        padding:18px 12px 40px;
+    }
+    .clock-box{position:relative;top:auto;left:auto;transform:none;grid-column:1/-1;width:100%;height:90px}
+    .dotclock{font-size:52px}
+    .team{padding-top:22px}
+    .center{grid-column:1/-1;grid-row:2;padding-top:10px}
+    .home{grid-column:1;grid-row:3}
+    .away{grid-column:2;grid-row:3}
+    .history{grid-column:1/-1;grid-row:4;margin-top:25px}
+    .sets-won{top:8px}
+    .keybar{font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="board" id="board">
+
+    <div class="clock-box">
+        <div class="dotclock" id="clock">00:00</div>
+    </div>
+
+    <section class="team home">
+        <div class="sets-won" id="homeSets">0</div>
+        <div class="team-name" id="homeName" contenteditable="true">HOME</div>
+        <div class="team-score" id="homeScore">00</div>
+    </section>
+
+    <section class="center">
+        <div class="set-title">SET <span class="set-number" id="setNumber">1</span></div>
+        <div class="serving">
+            <span class="serve-dot active" id="serveLeft"></span>
+            <span>SERVING</span>
+            <span class="serve-dot" id="serveRight"></span>
+        </div>
+    </section>
+
+    <section class="team away">
+        <div class="sets-won" id="awaySets">0</div>
+        <div class="team-name" id="awayName" contenteditable="true">AWAY</div>
+        <div class="team-score" id="awayScore">00</div>
+    </section>
+
+    <section class="history">
+        <div class="set-card active" id="card1">
+            <h2>SET 1</h2>
+            <div class="set-score"><span id="h1">00</span> - <span id="a1">00</span></div>
+        </div>
+        <div class="set-card" id="card2">
+            <h2>SET 2</h2>
+            <div class="set-score"><span id="h2">00</span> - <span id="a2">00</span></div>
+        </div>
+        <div class="set-card" id="card3">
+            <h2>SET 3</h2>
+            <div class="set-score"><span id="h3">00</span> - <span id="a3">00</span></div>
+        </div>
+        <div class="set-card" id="card4">
+            <h2>SET 4</h2>
+            <div class="set-score"><span id="h4">00</span> - <span id="a4">00</span></div>
+        </div>
+    </section>
+
+    <div class="keybar">
+        <b>Q</b> LEFT SERVE &nbsp; <b>W</b> RIGHT SERVE &nbsp;
+        <b>1</b> HOME + &nbsp; <b>2</b> HOME − &nbsp;
+        <b>9</b> AWAY + &nbsp; <b>0</b> AWAY − &nbsp;
+        <b>A</b> SET 1 START &nbsp; <b>S</b> SET 1 END &nbsp;
+        <b>D</b> SET 2 START &nbsp; <b>F</b> SET 2 END
+    </div>
+</div>
+
+<script>
+const state = {
+    home:0, away:0,
+    homeSets:0, awaySets:0,
+    currentSet:1,
+    serving:"left",
+    running:false,
+    elapsed:0,
+    sets:{
+        1:[0,0],
+        2:[0,0],
+        3:[0,0],
+        4:[0,0]
+    }
+};
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,"0");
+
+function update(){
+    $("homeScore").textContent = pad(state.home);
+    $("awayScore").textContent = pad(state.away);
+    $("homeSets").textContent = state.homeSets;
+    $("awaySets").textContent = state.awaySets;
+    $("setNumber").textContent = state.currentSet;
+
+    for(let i=1;i<=4;i++){
+        $("h"+i).textContent = pad(state.sets[i][0]);
+        $("a"+i).textContent = pad(state.sets[i][1]);
+        $("card"+i).classList.toggle("active", state.currentSet===i && state.running);
+        $("card"+i).classList.toggle("finished", i < state.currentSet);
+    }
+
+    $("serveLeft").classList.toggle("active",state.serving==="left");
+    $("serveRight").classList.toggle("active",state.serving==="right");
+}
+
+function flash(el){
+    el.classList.remove("flash");
+    void el.offsetWidth;
+    el.classList.add("flash");
+}
+
+function pointHome(amount){
+    if(!state.running) return;
+    state.home=Math.max(0,state.home+amount);
+    state.sets[state.currentSet]=[state.home,state.away];
+    flash($("homeScore"));
+    update();
+}
+
+function pointAway(amount){
+    if(!state.running) return;
+    state.away=Math.max(0,state.away+amount);
+    state.sets[state.currentSet]=[state.home,state.away];
+    flash($("awayScore"));
+    update();
+}
+
+function setServe(side){
+    state.serving=side;
+    flash(side==="left"?$("serveLeft"):$("serveRight"));
+    update();
+}
+
+function startSet(number){
+    if(number===1){
+        state.currentSet=1;
+        state.home=0;
+        state.away=0;
+        state.sets[1]=[0,0];
+        state.homeSets=0;
+        state.awaySets=0;
+        state.elapsed=0;
+    }else if(number===2){
+        // Preserve Set 1 result, then begin Set 2.
+        state.currentSet=2;
+        state.home=0;
+        state.away=0;
+        state.sets[2]=[0,0];
+        state.elapsed=0;
+    }
+    state.running=true;
+    update();
+}
+
+function endSet(number){
+    if(state.currentSet!==number || !state.running) return;
+
+    state.sets[number]=[state.home,state.away];
+
+    if(state.home>state.away){
+        state.homeSets++;
+    }else if(state.away>state.home){
+        state.awaySets++;
+    }
+
+    state.running=false;
+    update();
+}
+
+/*
+ Keyboard-only controls:
+ Q = left serving
+ W = right serving
+ 1 = home +1
+ 2 = home -1
+ 9 = away +1
+ 0 = away -1
+ A = set 1 start
+ S = set 1 end
+ D = set 2 start
+ F = set 2 end
+*/
+document.addEventListener("keydown",event=>{
+    // Allow normal typing inside editable team names.
+    if(event.target.isContentEditable) return;
+
+    const key=event.key.toLowerCase();
+
+    switch(key){
+        case "q": setServe("left"); break;
+        case "w": setServe("right"); break;
+        case "1": pointHome(1); break;
+        case "2": pointHome(-1); break;
+        case "9": pointAway(1); break;
+        case "0": pointAway(-1); break;
+        case "a": startSet(1); break;
+        case "s": endSet(1); break;
+        case "d": startSet(2); break;
+        case "f": endSet(2); break;
+    }
+});
+
+// Timer runs only while a set is officially started.
+setInterval(()=>{
+    if(!state.running) return;
+    state.elapsed++;
+    $("clock").textContent=pad(Math.floor(state.elapsed/60))+":"+pad(state.elapsed%60);
+},1000);
+
+update();
+</script>
+</body>
+</html>
